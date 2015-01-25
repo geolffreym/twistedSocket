@@ -24,26 +24,35 @@ class Socket(protocol.Protocol):
         if self.getClient(self.myName):
             del self.myClients[self.myName]
 
-    def isMessage(self, request):
+    def isCommand(self, request):
         my_request = request.split(':')
         if my_request[0] and my_request[1]:
-            if my_request[0] != 'auth':
+            return {
+                'param1': my_request[0],
+                'param2': my_request[1]
+            }
+        return False
+
+    def isMessage(self, request):
+        my_request = self.isCommand(request)
+
+        if my_request:
+            if my_request.get('param1') != 'auth':
                 return {
-                    'recipient': my_request[0],
-                    'message': my_request[1]
+                    'recipient': my_request.get('param1'),
+                    'message': my_request.get('param2')
                 }
 
         return False
 
     def isAuth(self, request):
-        my_request = request.split(':')
-        if my_request[0]:
-            if my_request[0] == 'auth':
-                if my_request[1]:
-                    return {
-                        'action': my_request[0],
-                        'name': my_request[1]
-                    }
+        my_request = self.isCommand(request)
+        if my_request:
+            if my_request.get('param1') == 'auth':
+                return {
+                    'action': my_request.get('param1'),
+                    'name': my_request.get('param2')
+                }
 
         return False
 
@@ -60,23 +69,30 @@ class Socket(protocol.Protocol):
             new_message = self.isMessage(request)
             if new_message:
                 self.handleMessage(new_message)
+            else:
+                print('Unknown Action')
 
     def handleMessage(self, message):
-        recipient = self.getClient(message.recipient)
+        recipient = self.getClient(message.get('recipient', None))
         if recipient:
-            recipient.write(message.message)
+            new_message = message.get('message', None)
+            if new_message is not None:
+                recipient.write(new_message)
         else:
             print ('The recipient not exist')
 
     def getClient(self, name):
-        if self.myClients[name]:
-            return self.myClients[name]
+        if name is not None:
+            if self.myClients[name]:
+                return self.myClients[name]
         return False
 
     def createClient(self, client, client_data):
-        if not self.myName:
-            self.myName = client_data.name
-            self.myClients[self.myName] = client.transport
+        client_name = client_data.get('name', None)
+        if client_name is not None:
+            if not self.myName:
+                self.myName = client_name
+                self.myClients[self.myName] = client.transport
 
 
 class SocketFactory(protocol.Factory):
