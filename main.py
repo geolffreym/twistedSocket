@@ -53,8 +53,8 @@ class Socket(protocol.Protocol):
         authenticate-> action:user
         send-> recipient:message
         """
-        if not self.myName:
-            new_client = self.isAuth(request)
+        new_client = self.isAuth(request)
+        if new_client:
             self.createClient(tmp_client_connection, new_client)
         else:
             new_message = self.isMessage(request)
@@ -74,8 +74,9 @@ class Socket(protocol.Protocol):
         return False
 
     def createClient(self, client, client_data):
-        self.myName = client_data.name
-        self.myClients[self.myName] = client.transport
+        if not self.myName:
+            self.myName = client_data.name
+            self.myClients[self.myName] = client.transport
 
 
 class SocketFactory(protocol.Factory):
