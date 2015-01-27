@@ -23,7 +23,7 @@ class Socket(protocol.Protocol):
 
     def connectionMade(self):
         self.myPeer = self.transport.getPeer()
-        print('Connection attemp from: ' + self.myPeer)
+        print 'Connection attempt from: ', self.myPeer.host
 
 
     def connectionLost(self, reason=ConnectionDone):
@@ -76,7 +76,7 @@ class Socket(protocol.Protocol):
             if new_message:
                 self.handleMessage(new_message)
             else:
-                print('Unknown Action')
+                print 'Unknown Action'
 
     def handleMessage(self, message):
         recipient = self.getClient(message.get('recipient', None))
@@ -85,7 +85,7 @@ class Socket(protocol.Protocol):
             if new_message is not None:
                 recipient.write(new_message)
         else:
-            print ('The recipient not exist')
+            print 'The recipient not exist'
 
     def getClient(self, name):
         if name is not None:
@@ -97,7 +97,7 @@ class Socket(protocol.Protocol):
         client_name = client_data.get('name', None)
         if client_name is not None:
             if not self.myName:
-                print('New Client created: ' + self.myName)
+                print 'New Client created: ', self.myName
                 self.myName = client_name
                 self.myClients[self.myName] = client.transport
 
@@ -115,6 +115,6 @@ class SocketFactory(protocol.Factory):
         return Socket(self.users)
 
 
-print("Listening on port " + str(PORT) + "...")
+print "Listening on port ", PORT, "..."
 reactor.listenTCP(PORT, SocketFactory())
 reactor.run()
