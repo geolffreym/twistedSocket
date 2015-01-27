@@ -1,4 +1,4 @@
-__author__ = 'gmena'
+__author__ = 'Geolffrey Mena <gmjun2000@gmail.com>'
 
 from twisted.internet import protocol, reactor
 from twisted.internet.error import ConnectionDone
@@ -7,7 +7,10 @@ PORT = 9000
 
 
 class Socket(protocol.Protocol):
-    """Subclass Socket Connection"""
+    """
+    Subclass Socket Connection
+    http://twistedmatrix.com/documents/current/api/twisted.internet.protocol.Protocol.html
+    """
 
     def __init__(self, users):
         self.myPeer = None
@@ -15,10 +18,13 @@ class Socket(protocol.Protocol):
         self.myClients = users
 
     def dataReceived(self, data):
+        """Handle data received"""
         self.handleRequest(self, data)
 
     def connectionMade(self):
         self.myPeer = self.transport.getPeer()
+        print('Connection attemp from: ' + self.myPeer)
+
 
     def connectionLost(self, reason=ConnectionDone):
         if self.getClient(self.myName):
@@ -91,12 +97,16 @@ class Socket(protocol.Protocol):
         client_name = client_data.get('name', None)
         if client_name is not None:
             if not self.myName:
+                print('New Client created: ' + self.myName)
                 self.myName = client_name
                 self.myClients[self.myName] = client.transport
 
 
 class SocketFactory(protocol.Factory):
-    """Socket Factory"""
+    """
+    Socket Factory
+    http://twistedmatrix.com/documents/current/api/twisted.internet.protocol.Factory.html
+    """
 
     def __init__(self):
         self.users = {}
@@ -105,5 +115,6 @@ class SocketFactory(protocol.Factory):
         return Socket(self.users)
 
 
+print("Listening on port " + str(PORT) + "...")
 reactor.listenTCP(PORT, SocketFactory())
 reactor.run()
