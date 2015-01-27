@@ -26,7 +26,7 @@ class ClientFactory(protocol.ClientFactory):
 
     def startedConnecting(self, connector):
         self.connection = connector
-        self.host = str(connector.getDestination().host)
+        self.host = connector.getDestination().host
         print "Start Connecting to ", self.host
 
     def buildProtocol(self, addr):
