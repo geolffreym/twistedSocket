@@ -1,6 +1,7 @@
 __author__ = 'Geolffrey Mena <gmjun2000@gmail.com>'
 
 from twisted.internet import protocol, reactor
+import socket
 
 PORT = 9000
 
@@ -41,3 +42,15 @@ class ClientFactory(protocol.ClientFactory):
 
 reactor.connectTCP('127.0.0.1', PORT, ClientFactory())
 reactor.run()
+
+
+# Alternative Connect from scratch
+username = 'juan'
+message = 'auth'
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(('theip', PORT))
+s.send(username + ":" + message)
+data = s.recv(1024)
+print "[" + username + "]:", data
+s.close()
