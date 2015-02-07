@@ -9,7 +9,10 @@ PORT = 9000
 class Client(protocol.Protocol):
     def __init__(self, connection):
         self.myConnection = connection
-        self.myPeer = connection.getDestination()
+        self.myPeer = None
+
+    def connectionMade(self):
+        self.myPeer = self.transport
 
     def dataReceived(self, data):
         """Handle data received"""
@@ -22,6 +25,7 @@ class ClientFactory(protocol.ClientFactory):
     """
 
     def __init__(self):
+        self.peer = None
         self.connection = None
         self.host = None
 
@@ -32,7 +36,9 @@ class ClientFactory(protocol.ClientFactory):
 
     def buildProtocol(self, addr):
         print 'Connected to ', self.host
-        return Client(self.connection)
+        client = Client(self.connection)
+        self.peer = client.myPeer
+        return client
 
     def clientConnectionLost(self, connector, reason):
         print 'Lost connection.  Reason:', reason
@@ -40,17 +46,5 @@ class ClientFactory(protocol.ClientFactory):
         connector.connect()
 
 
-reactor.connectTCP('127.0.0.1', PORT, ClientFactory())
-reactor.run()
-
-
-# Alternative Connect from scratch
-username = 'juan'
-message = 'auth'
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(('theip', PORT))
-s.send(username + ":" + message)
-data = s.recv(1024)
-print "[" + username + "]:", data
-s.close()
+client = reactor.connectTCP('127.0.0.1', PORT, ClientFactory())
+# reactor.run()
